@@ -28,8 +28,6 @@ The project includes a FastAPI HTTP service and Docker Compose configuration for
 - `.env.example` – safe template for local configuration values
 - `data/` – folder for your local PDF documents
 - `start-vector-db.ps1` – starts the Docker pgvector database container
-- `rag_env/` – local Python environment for the project and intentionally excluded from Git
-- `.gitignore` – keeps local environment files, caches, and licensed PDFs out of the repository
 
 ## Requirements
 
