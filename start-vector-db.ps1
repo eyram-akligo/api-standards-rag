@@ -10,8 +10,8 @@ if ($existing -eq $containerName) {
 
     docker run -d `
         --name $containerName `
-        -e POSTGRES_USER=myuser `
-        -e POSTGRES_PASSWORD=admin `
+        -e POSTGRES_USER=<your_username> `
+        -e POSTGRES_PASSWORD=<your_password> `
         -e POSTGRES_DB=ragdb `
         -p 5432:5432 `
         -v pgvector-data:/var/lib/postgresql `
