@@ -39,22 +39,18 @@ Python 3.12 is required only when running ingestion or the command-line agent ou
 
 ## Environment setup
 
-From the project root, activate the virtual environment:
+Create and activate the virtual environment:
 
 ```powershell
-.\rag_env\Scripts\Activate.ps1
+python -m venv .venv
+
+.venv\Scripts\Activate.ps1
 ```
 
-Install any required packages if needed:
+Install required packages:
 
 ```powershell
 python -m pip install -r requirements.txt
-```
-
-If you do not yet have a `requirements.txt`, create one from your environment:
-
-```powershell
-python -m pip freeze > requirements.txt
 ```
 
 ## NVIDIA setup
@@ -80,7 +76,7 @@ Start the database container:
 The connection string is defined in `config.py` and is expected to match your local PostgreSQL setup:
 
 ```python
-DB_CONNECTION_STRING = "postgresql+psycopg://myuser:admin@localhost:5432/ragdb"
+DB_CONNECTION_STRING = "postgresql+psycopg://<USERNAME>:<PASSWORD>@<HOST>:<PORT>/<DATABASE>"
 ```
 
 If the local PostgreSQL service on your machine is already using port 5432, stop or disable it before starting the Docker database to avoid port conflicts.
@@ -92,7 +88,7 @@ This project expects your API PDFs to be placed in a local `data` folder inside 
 Example:
 
 ```text
-api_rag/
+<project_root>/
   data/
     API 650.pdf
     API 570.pdf
