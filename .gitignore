@@ -1,0 +1,42 @@
+# Python virtual environment
+rag_env/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Local environment files
+.env
+.env.*
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local data that should stay out of source control
+# Keep your licensed API PDFs in a local data folder, not in Git
+# You can still add your PDFs locally in the project root:
+# data/
+# but do not commit them if they are proprietary or licensed
+# If you want to ignore all PDFs in the data folder, use:
+data/*.pdf
+
+# Optional: ignore the entire data folder if you do not want to commit any documents
+# data/
+
+# Test artifacts or local debugging output
+*.log
+*.tmp
+*.bak
+
+test_conn.py
+output.txt
+test_output.txt
