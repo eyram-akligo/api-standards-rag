@@ -1,8 +1,10 @@
 # API Standards RAG Agent
 
-This project builds a retrieval-augmented generation (RAG) agent for API standards and technical documentation using NVIDIA models and a PostgreSQL pgvector database.
+This project builds a retrieval-augmented generation (RAG) service for API standards and technical documentation using NVIDIA models and a PostgreSQL pgvector database.
 
 It is designed for use with American Petroleum Institute (API) standards, technical inspection documents, and related engineering references. The app loads PDF documents, splits them into manageable chunks, creates embeddings with NVIDIA embeddings, stores them in pgvector, and then answers questions by retrieving the most relevant text segments.
+
+The project includes a FastAPI HTTP service and Docker Compose configuration for deployment.
 
 ## What this project does
 
@@ -20,17 +22,22 @@ It is designed for use with American Petroleum Institute (API) standards, techni
 - `ingest.py` – loads PDFs, creates embeddings, and stores them in pgvector
 - `main.py` – runs the agent and asks a question
 - `tools.py` – wraps the retrieval system as a tool for the agent
+- `api.py` – FastAPI service with `/health` and `/ask` endpoints
+- `Dockerfile` – container definition for the API service
+- `docker-compose.yml` – starts the API service and PostgreSQL pgvector database
+- `.env.example` – safe template for local configuration values
 - `data/` – folder for your local PDF documents
 - `start-vector-db.ps1` – starts the Docker pgvector database container
-- `rag_env/` – local Python environment for the project
+- `rag_env/` – local Python environment for the project and intentionally excluded from Git
+- `.gitignore` – keeps local environment files, caches, and licensed PDFs out of the repository
 
 ## Requirements
 
-- Python 3.12
 - Docker Desktop
 - NVIDIA API key
-- A running PostgreSQL pgvector container
 - API PDF documents in your local `data` folder
+
+Python 3.12 is required only when running ingestion or the command-line agent outside Docker.
 
 ## Environment setup
 
@@ -54,13 +61,13 @@ python -m pip freeze > requirements.txt
 
 ## NVIDIA setup
 
-Set your NVIDIA API key in the terminal before running the app:
+For local command-line usage, set your NVIDIA API key in the terminal before running the app:
 
 ```powershell
 $env:NVIDIA_API_KEY = "your_nvidia_api_key_here"
 ```
 
-The code uses the NVIDIA-hosted embedding and chat models configured in `config.py`.
+For Docker Compose deployment, use `.env` as described in the deployment section below. The code uses the NVIDIA-hosted embedding and chat models configured in `config.py`.
 
 ## Database setup
 
@@ -94,9 +101,13 @@ api_rag/
     API 653.pdf
 ```
 
+This folder is intentionally local to your machine. The repository does not include the actual licensed PDFs.
+
 Important: do not add proprietary PDF files to a public GitHub repository. This project assumes you will add your licensed documents locally and keep them out of source control.
 
 The project is intentionally designed so that users can place their own purchased or licensed PDF documents in `data/` without committing them to Git.
+
+If you clone this project and want to use it, place your own PDFs in `data/` before running `ingest.py`.
 
 ## Ingesting the documents
 
@@ -125,6 +136,81 @@ python .\main.py
 
 The app will create a retrieval tool and ask a question about the API standards stored in the database.
 
+## Docker deployment
+
+Create a local configuration file from the tracked template:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` and set the values below. Never commit this file.
+
+```env
+NVIDIA_API_KEY=your_nvidia_api_key
+POSTGRES_PASSWORD=choose_a_long_unique_password
+MODEL_NAME=nvidia/nvidia-nemotron-nano-9b-v2
+EMBEDDING_MODEL=nvidia/nv-embedqa-e5-v5
+CONNECTION_NAME=api_docs
+RETRIEVAL_K=6
+```
+
+Build and start the API and database services:
+
+```powershell
+docker compose up --build -d
+```
+
+The API becomes available at `http://localhost:8000`.
+
+Check that the service can reach PostgreSQL:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/health
+```
+
+Ask a question:
+
+```powershell
+$body = @{ question = "What does API 570 require for piping inspection?" } | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://localhost:8000/ask `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Interactive API documentation is at `http://localhost:8000/docs`.
+
+The initial document ingestion must run in an environment with access to the local PDFs. Start PostgreSQL, then use the local Python environment:
+
+```powershell
+docker compose up -d postgres
+.\rag_env\Scripts\Activate.ps1
+$env:NVIDIA_API_KEY = "your_nvidia_api_key"
+$env:DB_CONNECTION_STRING = "postgresql+psycopg://myuser:your_postgres_password@localhost:5432/ragdb"
+python .\ingest.py
+```
+
+The Docker volume `pgvector-data` persists the embeddings across container restarts.
+
+To inspect or stop the deployment:
+
+```powershell
+docker compose ps
+docker compose logs -f api
+docker compose down
+```
+
+## Production guidance
+
+- Put the API behind HTTPS and add authentication before exposing `/ask` publicly.
+- Store the NVIDIA key and database password in the deployment provider's secret manager.
+- Back up the pgvector volume or use managed PostgreSQL with pgvector for durable production data.
+- Restrict database network access to the API service.
+- Keep proprietary documents in controlled storage and ingest only in a trusted environment.
+
 ## Notes about proprietary PDFs
 
 The project is built around API standards that are often licensed or proprietary. Because of that, the PDF files themselves should not be committed to GitHub unless you have a repository policy or licensing arrangement that allows it.
@@ -135,6 +221,9 @@ The intended workflow is:
 2. Store the PDFs locally in the `data` folder
 3. Run the ingestion script
 4. Keep the raw PDF files out of version control
+5. Share only the source code, not the proprietary standards themselves
+
+This repository is meant to contain the application logic, not the purchased PDF documents.
 
 ## Typical workflow
 

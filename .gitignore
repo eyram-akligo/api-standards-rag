@@ -40,3 +40,5 @@ data/*.pdf
 test_conn.py
 output.txt
 test_output.txt
+
+.env

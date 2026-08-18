@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+rag_env/
+__pycache__/
+*.pyc
+data/
+README.md
+main.py
+ingest.py
+test_conn.py
