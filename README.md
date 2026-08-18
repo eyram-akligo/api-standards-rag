@@ -183,7 +183,7 @@ The initial document ingestion must run in an environment with access to the loc
 docker compose up -d postgres
 .\rag_env\Scripts\Activate.ps1
 $env:NVIDIA_API_KEY = "your_nvidia_api_key"
-$env:DB_CONNECTION_STRING = "postgresql+psycopg://myuser:your_postgres_password@localhost:5432/ragdb"
+$env:DB_CONNECTION_STRING = "postgresql+psycopg://<USERNAME>:<PASSWORD>@<HOST>:<PORT>/<DATABASE>"
 python .\ingest.py
 ```
 
