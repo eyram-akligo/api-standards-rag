@@ -9,7 +9,7 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY config.py database.py tools.py api.py ./
+COPY config.py database.py tools.py api.py ingest.py ./
 
 EXPOSE 8000
 

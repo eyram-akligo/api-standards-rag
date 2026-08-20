@@ -26,6 +26,8 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - ./data:/app/data:ro
 
 volumes:
   pgvector-data:

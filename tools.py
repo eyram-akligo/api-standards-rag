@@ -1,29 +1,40 @@
 from langchain_core.tools import Tool
+from urllib.parse import quote
+
+
+def build_document_url(source_path: str, page: int | None) -> str:
+    filename = source_path.replace("\\", "/").split("/")[-1]
+    encoded_filename = quote(filename)
+    url = f"/documents/{encoded_filename}"
+
+    if page is not None:
+        url += f"#page={page}"
+
+    return url
+
 
 
 def retrieve_with_sources(retriever, question):
     documents = retriever.invoke(question)
 
     if not documents:
-        return "No relevant documents were found."
+        return []
 
     results = []
 
     for document in documents:
         source = document.metadata.get("source", "Unknown source")
         page = document.metadata.get("page")
+        page_number = page + 1 if page is not None else None
 
-        if page is not None:
-            location = f"{source}, page {page + 1}"
-        else:
-            location = source
+        results.append({
+            "source": source,
+            "page": page_number,
+            "url": build_document_url(source, page_number),
+            "snippet": document.page_content[:400],
+        })
 
-        results.append(
-            f"Source: {location}\n"
-            f"Content:\n{document.page_content}"
-        )
-
-    return "\n\n---\n\n".join(results)
+    return results
 
 
 
